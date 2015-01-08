@@ -25,6 +25,8 @@ read_char(reader_t *restrict r, char * c){
     if(*c == '\n') {
       r->position.x = 0;
       r->position.y++;
+    } else {
+      r->position.x++;
     }
   } else {
     r->eof = true;
@@ -35,7 +37,7 @@ read_char(reader_t *restrict r, char * c){
 reader_t
 reader_init(char * filename)
 {
-  FILE * f = fopen("test.ob", "rb");
+  FILE * f = fopen(filename, "rb");
   if (!f) {
     reader_t r = {};
     return r;
@@ -49,8 +51,6 @@ reader_init(char * filename)
   strncpy(r.filename, filename, 256);
   return r;
 }
-
-
 
 typedef enum token_type {
   NNULL = 0,
@@ -133,11 +133,18 @@ typedef struct string {
   char buf[STRING_BUF_SIZE];
 } string_t;
 
+typedef struct number {
+  char buf[16];
+  double rval;
+  int    ival;
+} number_t;
+
 typedef struct token {
   token_type_t type;
   union {
     ident_t ident;
     string_t string;
+    number_t number;
   };
 } token_t;
 
@@ -145,8 +152,6 @@ typedef struct key_table_entry {
   token_type_t type;
   char id[12];
 } key_table_entry_t;
-
-
 
 typedef struct lex_context {
   char ch; /* last character read */
@@ -189,18 +194,22 @@ void
 lex_string(lex_context_t * ctx, reader_t * r, token_t * tok)
 {
   int i = 0;
-  char ch = ctx->ch;
-  read_char(r, &ch);
-  while (!(r->eof) && (ch != '"')) {
-    if (ch >= ' ') {
+  char * cp = &ctx->ch;
+  read_char(r, cp);
+  while (!(r->eof) && (*cp != '"')) {
+    if (*cp >= ' ') {
       if (i < STRING_BUF_SIZE-1) {
-	tok->string.buf[i] = ch;
+	tok->string.buf[i] = *cp;
 	i++;
       } else {
 	lex_mark(r, "string too long.");
       }
     }
+    read_char(r, cp);
   }
+  tok->string.buf[i] = 0;
+  tok->type = STRING;
+  read_char(r, cp);
 }
 
 void
@@ -212,13 +221,83 @@ lex_hex_string(lex_context_t * ctx, reader_t * r, token_t * tok)
 void
 lex_number(lex_context_t * ctx, reader_t * r, token_t * tok)
 {
-  int i = 0;
+  int n = 0; int k = 0;
+  double x = 0.0;
+  const int max = 2147483647;
+  char * cp = &ctx->ch;
+  do {
+    if (n < 16) {
+      tok->number.buf[n] = *cp - 0x30;
+      n++;
+    }
+    else {
+      lex_mark(r, "too many digits");
+      n = 0;
+    }
+    read_char(r, cp);
+  } while (!((*cp < '0' || *cp > '9') && (*cp < 'A' || *cp > 'F')));
+  switch(*cp) {
+  case 'H':
+  case 'R':
+  case 'X':
+    for(int i = 0; i<n; ++i) {
+      char h = tok->number.buf[i];
+      if (h >= 10) { h = h - 7; };
+      k = k * 0x10 + h;
+    }
+    break;
+  case '.':
+    read_char(r, cp);
+    for(int i = 0; i<n; ++i) {
+      x = x * 10.0 + tok->number.buf[i];
+    }
+    int e = 0;
+    while(*cp >= '0' && *cp <= 9) {
+      x = x * 10.0 + (*cp) - 0x30;
+      e--;
+      read_char(r, cp);
+    }
+    tok->type = REAL;
+    tok->number.rval = x;
+    break;
+  default:
+    for(int i = 0; i<n; i++) {
+      if (tok->number.buf[i] < 10) {
+	/* TODO: Check for overflow. */
+	k = k * 10 + tok->number.buf[i];
+      } else {
+	lex_mark(r, "bad integer");
+      }
+    }
+    tok->type = INT;
+    tok->number.ival = k;
+    break;
+  }
 }
 
 void
 lex_comment(lex_context_t * ctx, reader_t *r)
 {
-
+  char * cp = &ctx->ch;
+  read_char(r, cp);
+  do {
+    while((*cp != '*') && !(r->eof)) {
+      if (*cp == '(') {
+	read_char(r, cp);
+	if (*cp == '*') {
+	  lex_comment(ctx, r);} 
+	}
+      else {
+	read_char(r, cp);
+      }
+    }
+    while (*cp == '*') { read_char(r,cp); }
+  } while(!(*cp == ')' || r->eof));
+  if (!r->eof) {
+    read_char(r, cp);
+  } else {
+    lex_mark(r, "unterminated comment");
+  }
 }
 
 
@@ -362,7 +441,6 @@ lex_enter_keyword(lex_context_t * ctx, token_type_t type, const char * name, int
 lex_context_t
 lex_init(void)
 {
-
   lex_context_t ctx = { .ch = 0, .err_pos = { .x = 0, .y = 0 }, .err_count = 0, .kwx = {}, .key_table = {}};
   int k = 0;
   ctx.kwx[0] = 0;
@@ -409,8 +487,6 @@ lex_init(void)
   ctx.kwx[9] = k;
   return ctx;
 }
-
-
 
 const char *
 token_name[] = {
@@ -484,16 +560,10 @@ token_name[] = {
 int main(){
   reader_t r = reader_init("test.ob");
   lex_context_t ctx = lex_init();
-  for(int i = 0; i < 10; ++i) {
-    printf("ctx.kwx[%i] = %i\n", i, ctx.kwx[i]);
-  }
-  for(int i = 0; i < NUMBER_OF_KEYWORDS; ++i) {
-    printf("ctx.keyword_table[%i] = %s\n", i, ctx.key_table[i].id);
-  }
   token_t tok = { .type = NNULL, .ident = { .name = "" }};
   do {
     lex_token(&ctx, &r, &tok);
-    printf("%s\n", token_name[tok.type]);
+    printf("%s\n", token_name[tok.type], (tok.type == INT) ? tok.number.ival : 0);
   } while (!r.eof);
 
   return 0;
