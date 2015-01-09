@@ -4,80 +4,11 @@
 #include "../include/reader.h"
 #include "../include/lexer.h"
 
-const char *
-token_names[] = {
-  "NNULL",
-  "TIMES",
-  "RDIV",
-  "DIV",
-  "MOD",
-  "AND",
-  "PLUS",
-  "MINUS",
-  "OR",
-  "EQL",
-  "NEQ",
-  "LSS",
-  "LEQ",
-  "GTR",
-  "GEQ",
-  "IN",
-  "IS",
-  "ARROW",
-  "PERIOD",
-  "CHAR",
-  "INT",
-  "REAL",
-  "FALSE",
-  "TRUE",
-  "NIL",
-  "STRING",
-  "NOT",
-  "LPAREN",
-  "LBRAK",
-  "LBRACE",
-  "IDENT",
-  "IF",
-  "WHILE",
-  "REPEAT",
-  "CASE",
-  "FOR",
-  "COMMA",
-  "COLON",
-  "BECOMES",
-  "UPTO",
-  "RPAREN",
-  "RBRAK",
-  "RBRACE",
-  "THEN",
-  "OF",
-  "DO",
-  "TO",
-  "BY",
-  "SEMICOLON",
-  "END",
-  "BAR",
-  "ELSE",
-  "ELSEIF",
-  "UNTIL",
-  "RETURN",
-  "ARRAY",
-  "RECORD",
-  "POINTER",
-  "CONST",
-  "TYPE",
-  "VAR",
-  "PROCEDURE",
-  "BEGIN",
-  "IMPORT",
-  "MODULE"
-};
-
 
 int main(){
   srandom(12);
   //write_test_file("test2.ob");
-  reader_t r = reader_init("test.ob");
+  reader_t r = reader_init("tests/test.kant");
   lex_context_t ctx = lex_init();
   token_t tok;
   clock_t begin = clock();

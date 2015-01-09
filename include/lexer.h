@@ -66,9 +66,77 @@ typedef enum token_type {
   MODULE
 } token_type_t;
 
-static const int IDENTIFIER_LENGTH = 32;
-static const int NUMBER_OF_KEYWORDS = 33;
-static const int STRING_BUF_SIZE = 256;
+static const char* token_names[] = {
+  "NNULL",
+  "TIMES",
+  "RDIV",
+  "DIV",
+  "MOD",
+  "AND",
+  "PLUS",
+  "MINUS",
+  "OR",
+  "EQL",
+  "NEQ",
+  "LSS",
+  "LEQ",
+  "GTR",
+  "GEQ",
+  "IN",
+  "IS",
+  "ARROW",
+  "PERIOD",
+  "CHAR",
+  "INT",
+  "REAL",
+  "FALSE",
+  "TRUE",
+  "NIL",
+  "STRING",
+  "NOT",
+  "LPAREN",
+  "LBRAK",
+  "LBRACE",
+  "IDENT",
+  "IF",
+  "WHILE",
+  "REPEAT",
+  "CASE",
+  "FOR",
+  "COMMA",
+  "COLON",
+  "BECOMES",
+  "UPTO",
+  "RPAREN",
+  "RBRAK",
+  "RBRACE",
+  "THEN",
+  "OF",
+  "DO",
+  "TO",
+  "BY",
+  "SEMICOLON",
+  "END",
+  "BAR",
+  "ELSE",
+  "ELSEIF",
+  "UNTIL",
+  "RETURN",
+  "ARRAY",
+  "RECORD",
+  "POINTER",
+  "CONST",
+  "TYPE",
+  "VAR",
+  "PROCEDURE",
+  "BEGIN",
+  "IMPORT",
+  "MODULE"
+};
+
+static const int IDENTIFIER_LENGTH  = 256;;
+static const int NUMBER_OF_KEYWORDS  = 256;;
+static const int STRING_BUF_SIZE = 256;;
 
 typedef struct identifier {
   char name[IDENTIFIER_LENGTH];

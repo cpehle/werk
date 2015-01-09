@@ -1,11 +1,11 @@
 SDIR=src/
-ODIR=src/obj
+ODIR=obj/
 LDIR=lib/
 BDIR=bin/
 LIBS=
 IDIR=include/
 CC=clang
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -g
 
 _DEPS = lexer.h reader.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
