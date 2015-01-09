@@ -1,166 +1,11 @@
-#include <stdio.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <time.h>
 
-typedef struct position {
-  int x;
-  int y;
-} position_t;
-
-typedef struct reader {
-  char filename[256];
-  char * buffer;
-  int buffer_length;
-  int buffer_position;
-  position_t position;
-  bool eof;
-} reader_t;
-
-char
-read_char(reader_t * r){
-  char c;
-  if(r->buffer_position < r->buffer_length) {
-    c = r->buffer[r->buffer_position];
-    r->buffer_position++;
-    if(c == '\n') {
-      r->position.x = 0;
-      r->position.y++;
-    } else {
-      r->position.x++;
-    }
-  } else {
-    r->eof = true;
-    c = -1;
-  }
-  return c;
-}
-
-reader_t
-reader_init(char * filename)
-{
-  FILE * f = fopen(filename, "rb");
-  if (!f) {
-    reader_t r = {};
-    return r;
-  }
-  fseek(f, 0, SEEK_END);
-  long fsize = ftell(f);
-  fseek(f, 0, SEEK_SET);
-  char * buf =  malloc(fsize + 1);
-  fread(buf , fsize, 1, f);
-  reader_t r = { .filename = "", .buffer = buf, .buffer_length = fsize, .buffer_position = 0, .position = { .x = 0, .y = 1}, .eof = false };
-  strncpy(r.filename, filename, 256);
-  return r;
-}
-
-typedef enum token_type {
-  NNULL = 0,
-  TIMES,
-  RDIV,
-  DIV,
-  MOD,
-  AND,
-  PLUS,
-  MINUS,
-  OR,
-  EQL,
-  NEQ,
-  LSS,
-  LEQ,
-  GTR,
-  GEQ,
-  IN,
-  IS,
-  ARROW,
-  PERIOD,
-  CHAR,
-  INT,
-  REAL,
-  FALSE,
-  TRUE,
-  NIL,
-  STRING,
-  NOT,
-  LPAREN,
-  LBRAK,
-  LBRACE,
-  IDENT,
-  IF,
-  WHILE,
-  REPEAT,
-  CASE,
-  FOR,
-  COMMA,
-  COLON,
-  BECOMES,
-  UPTO,
-  RPAREN,
-  RBRAK,
-  RBRACE,
-  THEN,
-  OF,
-  DO,
-  TO,
-  BY,
-  SEMICOLON,
-  END,
-  BAR,
-  ELSE,
-  ELSEIF,
-  UNTIL,
-  RETURN,
-  ARRAY,
-  RECORD,
-  POINTER,
-  CONST,
-  TYPE,
-  VAR,
-  PROCEDURE,
-  BEGIN,
-  IMPORT,
-  MODULE
-} token_type_t;
-
-const int IDENTIFIER_LENGTH = 32;
-const int NUMBER_OF_KEYWORDS = 33;
-const int STRING_BUF_SIZE = 256;
-
-typedef struct identifier {
-  char name[IDENTIFIER_LENGTH];
-} ident_t;
-
-typedef struct string {
-  char buf[STRING_BUF_SIZE];
-} string_t;
-
-typedef struct number {
-  char buf[16];
-  double rval;
-  int    ival;
-} number_t;
-
-typedef struct token {
-  token_type_t type;
-  union {
-    ident_t ident;
-    string_t string;
-    number_t number;
-  };
-} token_t;
-
-typedef struct key_table_entry {
-  token_type_t type;
-  char id[12];
-} key_table_entry_t;
-
-typedef struct lex_context {
-  char ch; /* last character read */
-  int err_count;
-  int kwx[10];
-  key_table_entry_t key_table[NUMBER_OF_KEYWORDS];
-} lex_context_t;
+#include "../include/reader.h"
+#include "../include/lexer.h"
 
 void
 lex_mark(reader_t * r, char * err)
@@ -405,7 +250,7 @@ lex_token(lex_context_t * ctx, reader_t * r) {
 	}
       }
     } else if (ch < '[') {
-      ctx->ch = ch;
+      printf("lex ident");
       tok = lex_identifier(ctx, r, ch);
       ch = ctx->ch;
     } else if (ch < 'a') {
@@ -529,17 +374,17 @@ token_name[] = {
   "^         ",
   ":         ",
   "char      ",
-  "123322234 ",
+  "INT       ",
   "REAL      ",
   "false     ",
   "true      ",
   "nil       ",
-  "\"test 2\"",
+  "STRING    ",
   "~         ",
   "(         ",
   "[         ",
   "{         ",
-  "testing   ",
+  "IDENTIFIER",
   "if        ",
   "while     ",
   "repeat    ",
@@ -782,30 +627,3 @@ typedef struct item {
 /*   } */
 /* } */
 
-
-void
-write_test_file(char * filename)
-{
-  FILE* f = fopen(filename, "w");
-  int i;
-  for(int j = 0; j < 100000000; ++j) {
-      i = random()%MODULE;
-      fwrite(token_name[i], sizeof(char), 10, f);
-  }
-}
-
-
-int main(){
-  srandom(12);
-  //write_test_file("test2.ob");
-  reader_t r = reader_init("test2.ob");
-  lex_context_t ctx = lex_init();
-  token_t tok;
-  clock_t begin = clock();
-  do {
-    tok = lex_token(&ctx, &r);
-    //printf("%s\n", token_name[tok.type]);
-  } while (!r.eof);
-  printf("time passed: %ld\n", clock() - begin);
-  return 0;
-}
