@@ -1,0 +1,15 @@
+
+
+Hashed tree for pattern matching
+--------------------------------
+
+
+
+Provide capabilities through certificate chain:
+-----------------------------------------------
+
+Access to a region in memory is protected by a chain of certificates ending in
+the root certificate owned by the initial process.
+
+
+
