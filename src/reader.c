@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/reader.h"
+#include <stdbool.h>
+#include "lexer.h"
 
 char
 read_char(reader_t * r){

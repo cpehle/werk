@@ -168,12 +168,31 @@ typedef struct key_table_entry {
 } key_table_entry_t;
 
 typedef struct lex_context {
-  char ch; /* last character read */
+  char ch; // current character
+  token_t token; // current token
   int err_count;
   int kwx[10];
   key_table_entry_t key_table[NUMBER_OF_KEYWORDS];
 } lex_context_t;
 
+typedef struct position {
+  int x;
+  int y;
+} position_t;
+
+typedef struct reader {
+  char filename[256];
+  char * buffer;
+  int buffer_length;
+  int buffer_position;
+  position_t position;
+  int eof;
+} reader_t;
+
+char read_char(reader_t * r);
+reader_t reader_init(char * filename);
+
+
 lex_context_t lex_init();
 token_t lex_token(lex_context_t * ctx, reader_t * r);
-
+void lex_mark(reader_t * r, char * err);

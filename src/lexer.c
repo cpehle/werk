@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#include "../include/reader.h"
-#include "../include/lexer.h"
+#include "lexer.h"
 
 void
 lex_mark(reader_t * r, char * err)
@@ -13,7 +12,7 @@ lex_mark(reader_t * r, char * err)
   printf("%s:%i:%i: %s\n", r->filename, r->position.y, r->position.x, err);
 }
 
-token_t
+static token_t
 lex_identifier(lex_context_t * ctx, reader_t * r, char curr)
 {
   token_t tok;
@@ -40,7 +39,7 @@ lex_identifier(lex_context_t * ctx, reader_t * r, char curr)
   return tok;
 }
 
-token_t
+static token_t
 lex_string(lex_context_t * ctx, reader_t * r)
 {
   token_t tok;
@@ -64,7 +63,7 @@ lex_string(lex_context_t * ctx, reader_t * r)
   return tok;
 }
 
-token_t
+static token_t
 lex_hex_string(lex_context_t * ctx, reader_t * r)
 {
   token_t tok;
@@ -72,7 +71,7 @@ lex_hex_string(lex_context_t * ctx, reader_t * r)
   return tok;
 }
 
-token_t
+static token_t
 lex_number(lex_context_t * ctx, reader_t * r, char curr)
 {
   token_t tok;
@@ -132,7 +131,7 @@ lex_number(lex_context_t * ctx, reader_t * r, char curr)
   return tok;
 }
 
-void
+static void
 lex_comment(lex_context_t * ctx, reader_t *r)
 {
   char ch = read_char(r);
@@ -354,107 +353,4 @@ lex_init(void)
 }
 
 
-typedef enum {
-  FBYTE = 0,
-  FBOOL,
-  FCHAR,
-  FINT,
-  FREAL,
-  FSET,
-  FPOINTER,
-  FNILTYPE,
-  FNOTYPE,
-  FPROC,
-  FSTRING,
-  FARRAY,
-  FRECORD
-} form_t;
-
-typedef enum {
-  CHEAD = 0,
-  CCONST,
-  CVAR,
-  CPAR,
-  CFLD,
-  CTYP,
-  CSPROC,
-  CSFUNC,
-  CMOD
-} class_t;
-
-typedef struct type_desc * type_t;
-struct type_desc {
-  form_t form;
-  int ref, mno;
-  int no_param;
-  long len;
-  type_t base;
-  size_t size;
-};
-
-const struct type_desc Int_Type = {
-  .form = FINT,
-  .ref = 0,
-  .mno = 0,
-  .no_param = 0,
-  .base = 0,
-  .size = 4
-};
-
-const struct type_desc Real_Type = {
-  .form = FREAL,
-  .ref = 0,
-  .mno = 0,
-  .no_param = 0,
-  .base = 0,
-  .size = 4
-};
-
-
-
-typedef struct object_desc * object_t;
-struct object_desc {
-  class_t class;
-  int lev, exno;
-  bool expo, rdo;
-  object_t next, dsc;
-  type_t type;
-  ident_t name;
-  long    val;
-};
-
-typedef struct module_desc * module_t;
-struct module_desc {
-  struct object_desc obj;
-  ident_t orgname;
-};
-
-typedef struct compiler_ctx_desc * compiler_ctx_t;
-struct compiler_ctx_desc {
-  type_t type_table[64];
-};
-
-type_t
-type(compiler_ctx_t ctx, int ref, form_t form, size_t size)
-{
-  struct type_desc td = {
-    .form = form,
-    .ref  = ref,
-    .base = 0,
-    .size = size,
-  };
-  type_t t =  malloc(sizeof(td));
-  *t = td;
-  ctx->type_table[ref] = t;
-  return t;
-}
-
-typedef struct writer {
-  
-} writer_t;
-
-typedef struct item {
-  type_t type;
-  long a, b, r;
-} item_t;
 

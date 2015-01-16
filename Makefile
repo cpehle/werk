@@ -1,26 +1,14 @@
-SDIR=src/
-ODIR=obj/
-LDIR=lib/
-BDIR=bin/
-LIBS=
-IDIR=include/
-CC=clang
-CFLAGS=-I$(IDIR) -g
+werk: obj/lexer.o obj/parser.o obj/main.o obj/reader.o
+	clang obj/lexer.o obj/parser.o obj/main.o obj/reader.o -o werk
 
-_DEPS = lexer.h reader.h
-DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+obj/reader.o: src/reader.c src/lexer.h
+	clang -c src/reader.c -o obj/reader.o
 
-_OBJ = reader.o lexer.o main.o
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+obj/lexer.o: src/lexer.c src/lexer.h
+	clang -c src/lexer.c -o obj/lexer.o
 
+obj/parser.o: src/parser.c src/parser.h src/lexer.h
+	clang -c src/parser.c -o obj/parser.o
 
-$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-kant: $(OBJ)
-	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
-
-.PHONY: clean
-
-clean:
-	rm -f $(ODIR)/*.o *~ core $(IDIR)/*~ 
+obj/main.o: src/main.c src/parser.h src/lexer.h
+	clang -c src/main.c -o obj/main.o
