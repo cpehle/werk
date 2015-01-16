@@ -1,28 +1,3 @@
 (module Main : .
-	12 12 21 12 12 12)
-
-(module Main : Hello -> World .
-	(let (s : Array[Int[64] _] . 10 2 2 3 4 5 6 7)
-	     (r :                                    )
-	     ))
-
-module Main : s -> s (
-       
-
-)
-
-(module Main : Hello -> World .
-	(let (s : Array[Int[64] _] . 10 2 2 3 4 5 6 7)
-	     (r :                                    )
-	     ))
-
-
-
-main a b , c[a,b] : module {         }  = 
-
-
-Text a : * -> Constraint = (Read *, Write *) 
-s : Array[Int[64],_] = 10 2 2 3 4 5 6 7
-    
-
-    
+	(var x y z : . 12 2 3)
+	2 12 21 12 12 12)	
