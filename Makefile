@@ -1,16 +1,26 @@
-ODIR=obj/
 SDIR=src/
-IDIR=include/
+ODIR=obj/
+LDIR=lib/
+BDIR=bin/
 LIBS=
-CLAGS=-std=c99 -pedantic -Wall -O2 -fPIC
-LDLIBS=-ldl
-
+IDIR=include/
 CC=clang
+CFLAGS=-I$(IDIR) -g
 
-all: kant libkant.so
+_DEPS = lexer.h reader.h
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-kant: $(SRC)kant_linux.c $(SRC)kant.h
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(ODIR)$@ $< $(LDLIBS)
+_OBJ = reader.o lexer.o main.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-libkant.so: kant.c kant.h
-	$(CC) $(CFLAGS) -shared $(LDFLAGS) -o $(ODIR)$@ $< $(LDLIBS)
+
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+kant: $(OBJ)
+	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS) $(LIBS)
+
+.PHONY: clean
+
+clean:
+	rm -f $(ODIR)/*.o *~ core $(IDIR)/*~ 
