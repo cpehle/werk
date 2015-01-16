@@ -31,10 +31,10 @@ static void expression(parse_ctx_t *c)
       
 			}
 			if (accept(c, COLON)) {
-				type_signature(c,ast);
+				type_signature(c);
 			}
 			do {
-				expression(c,ast);
+				expression(c);
 			} while(c->tok.type != RPAREN);
 		} else if (accept(c, PROCEDURE)) {
       
