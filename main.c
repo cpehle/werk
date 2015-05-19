@@ -3,6 +3,7 @@
 #include <time.h>
 #include "lexer.h"
 #include "parser.h"
+#include "ast.h"
 
 int main(){
   srandom(12);
