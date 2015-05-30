@@ -134,9 +134,9 @@ static const char* token_names[] = {
   "MODULE"
 };
 
-static const int IDENTIFIER_LENGTH  = 256;;
-static const int NUMBER_OF_KEYWORDS  = 256;;
-static const int STRING_BUF_SIZE = 256;;
+#define IDENTIFIER_LENGTH 256
+#define NUMBER_OF_KEYWORDS 256
+#define STRING_BUF_SIZE 256
 
 typedef struct identifier {
   char name[IDENTIFIER_LENGTH];
