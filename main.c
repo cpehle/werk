@@ -6,7 +6,8 @@
 #include "ast.h"
 
 int main(){
-  srandom(12);
+  // chosen randomly :)
+  srandom(42);
   //write_test_file("test2.ob");
   reader_t r = reader_init("tests/test.kant");
   lex_context_t ctx = lex_init();
