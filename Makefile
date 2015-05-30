@@ -1,4 +1,4 @@
-CFLAGS:=-g -std=c11
+CFLAGS=-g -std=c11
 
 werk: lexer.o parser.o main.o reader.o
 	$(CC) lexer.o parser.o main.o reader.o -o werk
