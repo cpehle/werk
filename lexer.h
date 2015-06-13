@@ -180,19 +180,19 @@ typedef struct position {
   int y;
 } position_t;
 
-typedef struct reader {
+typedef struct Reader {
   char filename[256];
   char * buffer;
   int buffer_length;
   int buffer_position;
   position_t position;
   int eof;
-} reader_t;
+} Reader;
 
-char read_char(reader_t * r);
-reader_t reader_init(char * filename);
+char read_char(Reader * r);
+Reader reader_init(char * filename);
 
 
 lex_context_t lex_init();
-token_t lex_token(lex_context_t * ctx, reader_t * r);
-void lex_mark(reader_t * r, char * err);
+token_t lex_token(lex_context_t * ctx, Reader * r);
+void lex_mark(Reader * r, char * err);

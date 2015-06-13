@@ -7,13 +7,13 @@
 #include "lexer.h"
 
 void
-lex_mark(reader_t * r, char * err)
+lex_mark(Reader * r, char * err)
 {
   printf("%s:%i:%i: %s\n", r->filename, r->position.y, r->position.x, err);
 }
 
 static token_t
-lex_identifier(lex_context_t * ctx, reader_t * r, char curr)
+lex_identifier(lex_context_t * ctx, Reader * r, char curr)
 {
   token_t tok;
   int i = 0, k = 0;
@@ -40,7 +40,7 @@ lex_identifier(lex_context_t * ctx, reader_t * r, char curr)
 }
 
 static token_t
-lex_string(lex_context_t * ctx, reader_t * r)
+lex_string(lex_context_t * ctx, Reader * r)
 {
   token_t tok;
   int i = 0;
@@ -64,7 +64,7 @@ lex_string(lex_context_t * ctx, reader_t * r)
 }
 
 static token_t
-lex_hex_string(lex_context_t * ctx, reader_t * r)
+lex_hex_string(lex_context_t * ctx, Reader * r)
 {
   token_t tok;
   int i = 0;
@@ -72,7 +72,7 @@ lex_hex_string(lex_context_t * ctx, reader_t * r)
 }
 
 static token_t
-lex_number(lex_context_t * ctx, reader_t * r, char curr)
+lex_number(lex_context_t * ctx, Reader * r, char curr)
 {
   token_t tok;
   int n = 0; int k = 0;
@@ -132,7 +132,7 @@ lex_number(lex_context_t * ctx, reader_t * r, char curr)
 }
 
 static void
-lex_comment(lex_context_t * ctx, reader_t *r)
+lex_comment(lex_context_t * ctx, Reader *r)
 {
   char ch = read_char(r);
   do {
@@ -158,7 +158,7 @@ lex_comment(lex_context_t * ctx, reader_t *r)
 }
 
 token_t
-lex_token(lex_context_t * ctx, reader_t * r) {
+lex_token(lex_context_t * ctx, Reader * r) {
   token_t tok;
   char ch = ctx->ch;
   do {

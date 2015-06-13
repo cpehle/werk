@@ -95,7 +95,7 @@ void parse_program(parse_ctx_t *c) {
   printf(")\n");
 }
 
-parse_ctx_t parser_init(lex_context_t *lex, reader_t *reader) {
+parse_ctx_t parser_init(lex_context_t *lex, Reader *reader) {
   parse_ctx_t ctx = {};
   ctx.lex = lex;
   ctx.r = reader;

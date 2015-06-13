@@ -5,7 +5,7 @@
 #include "lexer.h"
 
 char
-read_char(reader_t * r){
+read_char(Reader * r){
   char c;
   if(r->buffer_position < r->buffer_length) {
     c = r->buffer[r->buffer_position];
@@ -23,12 +23,12 @@ read_char(reader_t * r){
   return c;
 }
 
-reader_t
+Reader
 reader_init(char * filename)
 {
   FILE * f = fopen(filename, "rb");
   if (!f) {
-    reader_t r = {};
+    Reader r = {};
     return r;
   }
   fseek(f, 0, SEEK_END);
@@ -36,7 +36,7 @@ reader_init(char * filename)
   fseek(f, 0, SEEK_SET);
   char * buf =  malloc(fsize + 1);
   fread(buf , fsize, 1, f);
-  reader_t r = { .filename = "", .buffer = buf, .buffer_length = fsize, .buffer_position = 0, .position = { .x = 0, .y = 1}, .eof = false };
+  Reader r = { .filename = "", .buffer = buf, .buffer_length = fsize, .buffer_position = 0, .position = { .x = 0, .y = 1}, .eof = false };
   strncpy(r.filename, filename, 256);
   return r;
 }
