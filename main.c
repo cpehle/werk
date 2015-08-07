@@ -7,17 +7,17 @@
 #include "ast.h"
 
 int main() {
-  Reader r = reader_init("tests/test.kant");
-  lex_context_t ctx = lex_init();
-  token_t tok;
+  Reader r = readerinit("tests/test.kant");
+  Lexer l = lexerinit();
+  Token tok;
   clock_t begin = clock();
   do {
-    tok = lex_token(&ctx, &r);
+    tok = lex_token(&l, &r);
   } while (!r.eof);
   printf("time passed: %ld\n", clock() - begin);
-  r = reader_init("tests/test.kant");
-  ctx = lex_init();
-  parse_ctx_t pctx = parser_init(&ctx, &r);
-  parse_program(&pctx);
+  r = readerinit("tests/test.kant");
+  l = lexerinit();
+  Parser pctx = parserinit(&l, &r);
+  parseprogram(&pctx);
   return 0;
 }

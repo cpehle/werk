@@ -12,19 +12,18 @@ lex_mark(Reader * r, char * err)
   printf("%s:%i:%i: %s\n", r->filename, r->position.y, r->position.x, err);
 }
 
-static token_t
-lex_identifier(lex_context_t * ctx, Reader * r, char curr)
+static Token
+lex_identifier(Lexer * ctx, Reader * r, char curr)
 {
-  token_t tok;
+  Token tok;
   int i = 0, k = 0;
   char ch = curr;
 
   do {
     if(i < IDENTIFIER_LENGTH-1) { tok.ident.name[i] = ch; ++i; }
-    ch = read_char(r);
+    ch = readchar(r);
   } while(!(((ch < '0') || (ch > '9')) && ((ch < 'A') || (ch > 'Z')) && ((ch < 'a') || (ch > 'z'))));
   tok.ident.name[i] = 0;
- 
   if (i<10) {
     for(k = ctx->kwx[i-1]; k < ctx->kwx[i]; ++k) {
       if(!strcmp(tok.ident.name, ctx->key_table[k].id)){
@@ -33,19 +32,19 @@ lex_identifier(lex_context_t * ctx, Reader * r, char curr)
 	return tok;
       }
     }
-  } 
+  }
   tok.type = IDENT;
   ctx->ch = ch;
   return tok;
 }
 
-static token_t
-lex_string(lex_context_t * ctx, Reader * r)
+static Token
+lex_string(Lexer * ctx, Reader * r)
 {
-  token_t tok;
+  Token tok;
   int i = 0;
   char ch = 0;
-  ch = read_char(r);
+  ch = readchar(r);
   while (!(r->eof) && (ch != '"')) {
     if (ch >= ' ') {
       if (i < STRING_BUF_SIZE-1) {
@@ -55,26 +54,26 @@ lex_string(lex_context_t * ctx, Reader * r)
 	lex_mark(r, "string too long.");
       }
     }
-    ch = read_char(r);
+    ch = readchar(r);
   }
   tok.string.buf[i] = 0;
   tok.type = STRING;
-  ctx->ch = read_char(r);
+  ctx->ch = readchar(r);
   return tok;
 }
 
-static token_t
-lex_hex_string(lex_context_t * ctx, Reader * r)
+static Token
+lex_hex_string(Lexer * ctx, Reader * r)
 {
-  token_t tok;
+  Token tok;
   int i = 0;
   return tok;
 }
 
-static token_t
-lex_number(lex_context_t * ctx, Reader * r, char curr)
+static Token
+lex_number(Lexer * ctx, Reader * r, char curr)
 {
-  token_t tok;
+  Token tok;
   int n = 0; int k = 0;
   double x = 0.0;
   const int max = 2147483647;
@@ -88,7 +87,7 @@ lex_number(lex_context_t * ctx, Reader * r, char curr)
       lex_mark(r, "too many digits");
       n = 0;
     }
-    ch = read_char(r);
+    ch = readchar(r);
   } while (!((ch < '0' || ch > '9') && (ch < 'A' || ch > 'F')));
   switch(ch) {
   case 'H':
@@ -101,7 +100,7 @@ lex_number(lex_context_t * ctx, Reader * r, char curr)
     }
     break;
   case '.':
-    ch = read_char(r);
+    ch = readchar(r);
     for(int i = 0; i<n; ++i) {
       x = x * 10.0 + tok.number.buf[i];
     }
@@ -109,7 +108,7 @@ lex_number(lex_context_t * ctx, Reader * r, char curr)
     while(ch >= '0' && ch <= 9) {
       x = x * 10.0 + ch - 0x30;
       e--;
-      ch = read_char(r);
+      ch = readchar(r);
     }
     tok.type = REAL;
     tok.number.rval = x;
@@ -132,38 +131,38 @@ lex_number(lex_context_t * ctx, Reader * r, char curr)
 }
 
 static void
-lex_comment(lex_context_t * ctx, Reader *r)
+lex_comment(Lexer * ctx, Reader *r)
 {
-  char ch = read_char(r);
+  char ch = readchar(r);
   do {
     while((ch != '*') && !(r->eof)) {
       if (ch == '(') {
-	ch = read_char(r);
+    ch = readchar(r);
 	if (ch == '*') {
 	  lex_comment(ctx, r);
 	  ch = ctx->ch;
 	} 
       } else {
-	ch = read_char(r);
+    ch = readchar(r);
       }
     }
-    while (ch == '*') { ch = read_char(r); }
+    while (ch == '*') { ch = readchar(r); }
   } while(!(ch == ')' || r->eof));
   if (!r->eof) {
-    ch = read_char(r);
+    ch = readchar(r);
   } else {
     lex_mark(r, "unterminated comment");
   }
   ctx->ch = ch;
 }
 
-token_t
-lex_token(lex_context_t * ctx, Reader * r) {
-  token_t tok;
+Token
+lex_token(Lexer * ctx, Reader * r) {
+  Token tok;
   char ch = ctx->ch;
   do {
     while (!(r->eof) && (ch <= 0x20)) {
-      ch = read_char(r);
+      ch = readchar(r);
     } /* skip whitespace and control characters */
     if (ch < 'A') {
       if (ch < '0') {
@@ -173,7 +172,7 @@ lex_token(lex_context_t * ctx, Reader * r) {
 	  ch = ctx->ch;
 	  break;
 	case '#':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = NEQ;
 	  break;
 	case '$':
@@ -181,43 +180,43 @@ lex_token(lex_context_t * ctx, Reader * r) {
 	  ch = ctx->ch;
 	  break;
 	case '&':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = AND;
 	  break;
 	case '(':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  if (ch == '*') { tok.type = NNULL; lex_comment(ctx, r); ch = ctx->ch;} else { tok.type = LPAREN; };
 	  break;
 	case ')':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = RPAREN;
 	  break;
 	case '*':
- 	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = TIMES;
 	  break;
 	case '+':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = PLUS;
 	  break;
 	case ',':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = COMMA;
 	  break;
 	case '-':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = MINUS;
 	  break;
 	case '.':
-	  ch = read_char(r);
-	  if (ch == '.') { ch = read_char(r); tok.type = UPTO; } else { tok.type = PERIOD; };
+      ch = readchar(r);
+      if (ch == '.') { ch = readchar(r); tok.type = UPTO; } else { tok.type = PERIOD; };
 	  break;
 	case '/':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = RDIV;
 	  break;
 	default:
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = NNULL;
 	}
       } else if (ch < ':') {
@@ -226,27 +225,27 @@ lex_token(lex_context_t * ctx, Reader * r) {
       } else {
 	switch (ch) {
 	case ':':
-	  ch = read_char(r);
-	  if(ch == '=') { ch = read_char(r); tok.type = BECOMES; } else { tok.type = COLON; }
+      ch = readchar(r);
+      if(ch == '=') { ch = readchar(r); tok.type = BECOMES; } else { tok.type = COLON; }
 	  break;
 	case ';':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = SEMICOLON;
 	  break;
 	case '<':
-	  ch = read_char(r);
-	  if(ch == '=') { ch = read_char(r); tok.type = LEQ; } else { tok.type = LSS; };
+      ch = readchar(r);
+      if(ch == '=') { ch = readchar(r); tok.type = LEQ; } else { tok.type = LSS; };
 	  break;
 	case '=':
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = EQL;
 	  break;
 	case '>':
-	  ch = read_char(r);
-	  if(ch == '=') { ch = read_char(r); tok.type = GEQ; } else { tok.type = GTR; };
+      ch = readchar(r);
+      if(ch == '=') { ch = readchar(r); tok.type = GEQ; } else { tok.type = GTR; };
 	  break;
 	default:
-	  ch = read_char(r);
+      ch = readchar(r);
 	  tok.type = NNULL;
 	}
       }
@@ -267,7 +266,7 @@ lex_token(lex_context_t * ctx, Reader * r) {
       default:
 	tok.type = NNULL;
       }
-      ch = read_char(r);
+      ch = readchar(r);
     } else if (ch < '{') {
       tok = lex_identifier(ctx, r, ch);
       ch = ctx->ch;
@@ -288,7 +287,7 @@ lex_token(lex_context_t * ctx, Reader * r) {
       default:
 	tok.type = NNULL;
       }
-      ch = read_char(r);
+      ch = readchar(r);
     }
   } while((tok.type == NNULL) && (r->eof == false));
   ctx->ch = ch;
@@ -296,16 +295,16 @@ lex_token(lex_context_t * ctx, Reader * r) {
 }
 
 void
-lex_enter_keyword(lex_context_t * ctx, token_type_t type, const char * name, int k)
+lex_enter_keyword(Lexer * ctx, Tokentype type, const char * name, int k)
 {
   strncpy(ctx->key_table[k].id, name, 12);
   ctx->key_table[k].type = type;
 }
 
-lex_context_t
-lex_init(void)
+Lexer
+lexerinit(void)
 {
-  lex_context_t ctx = { .ch = 0, .err_count = 0, .kwx = {}, .key_table = {}};
+  Lexer ctx = { .ch = 0, .err_count = 0, .kwx = {}, .key_table = {}};
   int k = 0;
   ctx.kwx[0] = 0;
   ctx.kwx[1] = 0;

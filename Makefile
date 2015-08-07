@@ -6,7 +6,7 @@ werk: lexer.o parser.o main.o reader.o
 reader.o: reader.c lexer.h
 	$(CC) $(CFLAGS) -c reader.c -o reader.o
 
-lexer.o: lexer.c lexer.h
+lexer.o: lexer.c reader.c lexer.h
 	$(CC) $(CFLAGS) -c lexer.c -o lexer.o
 
 parser.o: parser.c parser.h lexer.h

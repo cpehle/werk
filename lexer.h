@@ -1,4 +1,4 @@
-typedef enum token_type {
+typedef enum Tokentype {
   NNULL = 0,
   TIMES,
   RDIV,
@@ -64,7 +64,7 @@ typedef enum token_type {
   BEGIN,
   IMPORT,
   MODULE
-} token_type_t;
+} Tokentype;
 
 static const char* token_names[] = {
   "NNULL",
@@ -152,28 +152,28 @@ typedef struct number {
   int    ival;
 } number_t;
 
-typedef struct token {
-  token_type_t type;
+typedef struct Token {
+  Tokentype type;
   union {
     ident_t ident;
     string_t string;
     number_t number;
   };
-} token_t;
+} Token;
 
 
 typedef struct key_table_entry {
-  token_type_t type;
+  Tokentype type;
   char id[12];
 } key_table_entry_t;
 
-typedef struct lex_context {
+typedef struct Lexer {
   char ch; // current character
-  token_t token; // current token
+  Token token; // current token
   int err_count;
   int kwx[10];
   key_table_entry_t key_table[NUMBER_OF_KEYWORDS];
-} lex_context_t;
+} Lexer;
 
 typedef struct position {
   int x;
@@ -189,10 +189,10 @@ typedef struct Reader {
   int eof;
 } Reader;
 
-char read_char(Reader * r);
-Reader reader_init(char * filename);
+char readchar(Reader * r);
+Reader readerinit(char * filename);
 
 
-lex_context_t lex_init();
-token_t lex_token(lex_context_t * ctx, Reader * r);
+Lexer lexerinit();
+Token lex_token(Lexer * ctx, Reader * r);
 void lex_mark(Reader * r, char * err);

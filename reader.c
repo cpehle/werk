@@ -5,7 +5,7 @@
 #include "lexer.h"
 
 char
-read_char(Reader * r){
+readchar(Reader * r){
   char c;
   if(r->buffer_position < r->buffer_length) {
     c = r->buffer[r->buffer_position];
@@ -24,7 +24,7 @@ read_char(Reader * r){
 }
 
 Reader
-reader_init(char * filename)
+readerinit(char * filename)
 {
   FILE * f = fopen(filename, "rb");
   if (!f) {
