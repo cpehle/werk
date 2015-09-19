@@ -3,12 +3,15 @@ typedef enum {
         Float,
         Binop,
         Fun
-} Tag;
+} TermKind;
 
 typedef struct {
-        Tag t;
+        TermKind t;
         union {
+                struct {
+                        short idx;
+                } index;
                 int x;
                 float f;
-        } v;
-} Term;
+        } u;
+} TermDesc;

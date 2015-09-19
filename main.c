@@ -2,9 +2,11 @@
 
 #include <stdio.h>
 #include <time.h>
-#include "lexer.h"
-#include "parser.h"
 #include "ast.h"
+#include "lexer.h"
+
+#include "parser.h"
+
 
 int main() {
   Reader r = readerinit("tests/test.kant");
@@ -18,6 +20,7 @@ int main() {
   r = readerinit("tests/test.kant");
   l = lexerinit();
   Parser pctx = parserinit(&l, &r);
-  parseprogram(&pctx);
+  TermDesc d;
+  parseprogram(&pctx, &d);
   return 0;
 }

@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 static int accept(Parser *c, Tokentype t) {
-  if (c->tok.type == t) {
-    c->tok = lex_token(c->lex, c->r);
+  if (c->token.type == t) {
+    c->token = lex_token(c->lex, c->r);
     return 1;
   }
   return 0;
@@ -24,10 +24,11 @@ static void type_signature(Parser *c) {
   expect(c, PERIOD, "Expected \".\" at end of type signature.");
 }
 
-static int variable(Parser *c) {
-  if (c->tok.type == IDENT) {
-    printf(" %s", c->tok.ident.name);
-    c->tok = lex_token(c->lex, c->r);
+static int variable(Parser *c, char * varname) {
+  if (c->token.type == IDENT) {
+    printf(" %s", c->token.ident.name);
+    varname = c->token.ident.name;
+    c->token = lex_token(c->lex, c->r);
     return 1;
   } else {
     return 0;
@@ -35,13 +36,13 @@ static int variable(Parser *c) {
 }
 
 static int literal(Parser *c) {
-  if (c->tok.type == REAL) {
-    printf(" %f", c->tok.number.rval);
-    c->tok = lex_token(c->lex, c->r);
+  if (c->token.type == REAL) {
+    printf(" %f", c->token.number.rval);
+    c->token = lex_token(c->lex, c->r);
     return 1;
-  } else if (c->tok.type == INT) {
-    printf(" %d", c->tok.number.ival);
-    c->tok = lex_token(c->lex, c->r);
+  } else if (c->token.type == INT) {
+    printf(" %d", c->token.number.ival);
+    c->token = lex_token(c->lex, c->r);
     return 1;
   } else {
     return 0;
@@ -52,8 +53,9 @@ static void expression(Parser *c) {
   if (accept(c, LPAREN)) {
     if (accept(c, VAR)) {
       printf(" (var");
-      variable(c);
-      while (variable(c)) {
+      char varname[256];
+      variable(c, varname);
+      while (variable(c, varname)) {
       };
       if (accept(c, COLON)) {
         printf(": ");
@@ -62,7 +64,7 @@ static void expression(Parser *c) {
         (expect(c, PERIOD, "Expected type signature or \'.\'."));
       do {
         expression(c);
-      } while (c->tok.type != RPAREN);
+      } while (c->token.type != RPAREN);
 
     } else if (accept(c, PROCEDURE)) {
     }
@@ -75,23 +77,30 @@ static void expression(Parser *c) {
   }
 }
 
+
+
 static void module_signature(Parser *c) {
   printf(".");
   expect(c, PERIOD, "Expected \".\" at end of module signature.");
 }
 
-void parseprogram(Parser *c) {
+typedef struct {
+	char name[256];
+} Module;
+
+void parseprogram(Parser *c, TermDesc* v) {
+  Module m = {};
   printf("(module");
   expect(c, LPAREN, "Expected ( at beginning of file.");
   expect(c, MODULE, "Expected keyword \"module\" at beginning of file.");
-  variable(c);
+  //variable(c, m.varname);
   if (accept(c, COLON)) {
     printf(": ");
     module_signature(c);
   }
   do {
     expression(c);
-  } while (c->tok.type != RPAREN);
+  } while (c->token.type != RPAREN);
   printf(")\n");
 }
 
@@ -99,6 +108,6 @@ Parser parserinit(Lexer *lex, Reader *reader) {
   Parser ctx = {};
   ctx.lex = lex;
   ctx.r = reader;
-  ctx.tok = lex_token(ctx.lex, ctx.r);
+  ctx.token = lex_token(ctx.lex, ctx.r);
   return ctx;
 }
