@@ -1,19 +1,16 @@
-CFLAGS=-g -std=c11
+CFLAGS=-g -std=c11 -I werk/
+CHEADERS=$(wildcard werk/*.h)
+CFILES=$(wildcard werk/*.c)
+OBJFILES=$(patsubst build/%.o,%c,$(CFILES))
 
-werk: lexer.o parser.o main.o reader.o
-	$(CC) lexer.o parser.o main.o reader.o -o werk
+werk.native: $(OBJFILES)
+	mkdir build/
+	$(CC) $(CFLAGS) $(OBJFILES) -o werk.native
 
-reader.o: reader.c lexer.h
-	$(CC) $(CFLAGS) -c reader.c -o reader.o
 
-lexer.o: lexer.c reader.c lexer.h
-	$(CC) $(CFLAGS) -c lexer.c -o lexer.o
-
-parser.o: parser.c parser.h lexer.h
-	$(CC) $(CFLAGS) -c parser.c -o parser.o
-
-main.o: main.c parser.h lexer.h
-	$(CC) $(CFLAGS) -c main.c -o main.o
+build/%.o: werk/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm *.o
+	rm werk.native
+	rm -rf build/
